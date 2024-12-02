@@ -47,10 +47,7 @@ public:
 		}
 		adapter = adapters[useAdapterIndex];
 		factory->Release();
-
-
 	}
-
 
 };
 

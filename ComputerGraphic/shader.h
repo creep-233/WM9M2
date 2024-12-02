@@ -8,6 +8,7 @@
 #include<d3d11.h>
 #include"ShaderReflection.h"
 #include"GEbase.h"
+#include"texture.h"
 
 //#pragma comment(lib, "dxguid.lib")
 
@@ -87,6 +88,8 @@ ShaderManager::~ShaderManager() {
 class shader {
 
 public:
+
+    //sampler Sampler;
 
     ID3D11VertexShader* vertexShader;
     ID3D11PixelShader* pixelShader;
@@ -196,10 +199,15 @@ public:
 
 
 
-    void apply(DXCore* core/*, ID3D11Buffer* cb*/, ID3D11DeviceContext* devicecontext) {
+    void apply(DXCore* core, ID3D11DeviceContext* devicecontext/*, std::string name, ID3D11ShaderResourceView* srv, ID3D11SamplerState* state*/) {
+
         core->devicecontext->IASetInputLayout(layout);
         core->devicecontext->VSSetShader(vertexShader, NULL, 0);
         core->devicecontext->PSSetShader(pixelShader, NULL, 0);
+        //core->devicecontext->PSSetShaderResources(textureBindPointsPS[name], 1, &srv);
+        ////core->devicecontext->PSSetSamplers(0, 1, &state);
+        //Sampler.bind(core, state);
+
 
         for (int i = 0; i < vsConstantBuffers.size(); i++)
         {

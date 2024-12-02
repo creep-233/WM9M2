@@ -36,7 +36,7 @@ public:
 	int dirty;
 	int index;
 	ShaderStage shaderStage;
-	void init(DXCore* core, unsigned int sizeInBytes, int constantBufferIndex, ShaderStage _shaderStage, ID3D11Device* device)
+	void init(DXCore* core, unsigned int sizeInBytes, int constantBufferIndex, ShaderStage _shaderStage)
 	{
 		unsigned int sizeInBytes16 = ((sizeInBytes + 15) & -16);
 		D3D11_BUFFER_DESC bd;
@@ -92,7 +92,6 @@ public:
 	//reflection.build(core, shader, vsConstantBuffers, textureBindPointsVS, ShaderStage::VertexShader, core->device);
 
 	{
-		ID3D11Device* device;
 		ID3D11ShaderReflection* reflection;
 		D3DReflect(shader->GetBufferPointer(), shader->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflection);
 		D3D11_SHADER_DESC desc;
@@ -116,7 +115,7 @@ public:
 				buffer.constantBufferData.insert({ vDesc.Name, bufferVariable });
 				totalSize += bufferVariable.size;
 			}
-			buffer.init(core, totalSize, i, shaderStage, device);
+			buffer.init(core, totalSize, i, shaderStage);
 			buffers.push_back(buffer);
 		}
 		for (int i = 0; i < desc.BoundResources; i++)
