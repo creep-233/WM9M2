@@ -1,0 +1,6 @@
+﻿  Game.cpp
+C:\Users\u5620331\source\repos\ComputerGraphic\ComputerGraphic\adapter.h(42,34): warning C4018: '>': signed/unsigned mismatch
+  (compiling source file 'Game.cpp')
+  
+     Creating library C:\Users\u5620331\source\repos\ComputerGraphic\ComputerGraphic\x64\Debug\ComputerGraphic.lib and object C:\Users\u5620331\source\repos\ComputerGraphic\ComputerGraphic\x64\Debug\ComputerGraphic.exp
+  ComputerGraphic.vcxproj -> C:\Users\u5620331\source\repos\ComputerGraphic\ComputerGraphic\x64\Debug\ComputerGraphic.exe
