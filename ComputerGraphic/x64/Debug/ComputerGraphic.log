@@ -1,43 +1,37 @@
 ﻿  Game.cpp
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\adapter.h(42,34): warning C4018: '>': signed/unsigned mismatch
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\adapter.h(42,34): warning C4018: “>”: 有符号/无符号不匹配
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(46,26): warning C4101: 'data': unreferenced local variable
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(46,26): warning C4101: “data”: 未引用的局部变量
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(99,21): warning C4018: '<': signed/unsigned mismatch
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(99,21): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(107,22): warning C4018: '<': signed/unsigned mismatch
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(107,22): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(121,21): warning C4018: '<': signed/unsigned mismatch
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\ShaderReflection.h(121,21): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(10,9): warning C4005: 'max': macro redefinition
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(10,9): warning C4005: “max”: 宏重定义
+  (编译源文件“Game.cpp”)
       C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(193,9):
-      see previous definition of 'max'
+      参见“max”的前一个定义
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(11,9): warning C4005: 'min': macro redefinition
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(11,9): warning C4005: “min”: 宏重定义
+  (编译源文件“Game.cpp”)
       C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(197,9):
-      see previous definition of 'min'
+      参见“min”的前一个定义
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(458,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(462,14): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\mesh.h(48,87): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\mesh.h(50,87): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+  (编译源文件“Game.cpp”)
   
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\mesh.h(48,58): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-  (compiling source file 'Game.cpp')
+D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\mesh.h(50,58): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+  (编译源文件“Game.cpp”)
   
-  Vertex.cpp
-C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\ComputerGraphic\Mathematic.h(458,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  (compiling source file 'Vertex.cpp')
-  
-  Windows.cpp
-  Generating Code...
-     Creating library C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.lib and object C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.exp
-  ComputerGraphic.vcxproj -> C:\Users\u5620331\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.exe
+    正在创建库 D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.lib 和对象 D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.exp
+  ComputerGraphic.vcxproj -> D:\学习办公\华威\oneDrive\OneDrive - University of Warwick\WM9M2\ComputerGraphic\x64\Debug\ComputerGraphic.exe

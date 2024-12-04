@@ -6,6 +6,7 @@
 #include<string>
 #include "Vertex.cpp"
 #include"mesh.h"
+#include"Camera.h"
 
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow) {
@@ -14,7 +15,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	DXCore dx;
 	shader shader;
 	Triangle t;
-	plane p;
+	plane Plane;
+	cube Cube;
+	Camera camera(Vec3(0.0f, 5.0f, -10.0f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
 
 	t.init();
 	std::string s1 = "vertexShader.txt";
@@ -30,7 +33,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	//shader.apply(&dx, dx.devicecontext);
 
 
-	p.init(dx.devicecontext, &shader, dx);
+	Plane.init(dx.devicecontext, &shader, dx, &camera);
+	//Cube.init(dx);
+	
 
 
 
@@ -42,7 +47,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 		shader.apply(&dx, dx.devicecontext);
 
-		p.draw();
+		Plane.draw();
+		//Cube.draw();
 		dx.present();
 
 	}

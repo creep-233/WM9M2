@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="adapter.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="GEbase.h" />
     <ClInclude Include="GEMLoader.h" />

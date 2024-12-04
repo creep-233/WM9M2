@@ -119,6 +119,10 @@
 		Vec3& operator/=(const float val) { x /= val; y /= val; z /= val; return *this; }
 		Vec3 operator-() const { return Vec3(-v[0], -v[1], -v[2]); }
 
+		friend Vec3 operator*(float scalar, const Vec3& vec) {
+			return Vec3(vec.x * scalar, vec.y * scalar, vec.z * scalar);
+		}
+
 		// get the length of vector
 		float getLength() const {
 			return sqrtf(SQ(x) + SQ(y) + SQ(z));
@@ -564,6 +568,8 @@
 		Quaternion(float _w = 1, float _x = 0, float _y = 0, float _z = 0)
 			: w(_w), x(_x), y(_y), z(_z) {}
 
+
+
 		// Normalize the quaternion
 		void normalize() {
 			float norm = std::sqrtf(SQ(w) + SQ(x) + SQ(y) + SQ(z));
@@ -639,6 +645,38 @@
 			mat.a[2][2] = 1 - 2 * (SQ(x) + SQ(y));
 			return mat;
 		}
+
+		//Matrix toMatrix()
+		//{
+		//	float xx = q[0] * q[0];
+		//	float xy = q[0] * q[1];
+		//	float xz = q[0] * q[2];
+		//	float yy = q[1] * q[1];
+		//	float zz = q[2] * q[2];
+		//	float yz = q[1] * q[2];
+		//	float wx = q[3] * q[0];
+		//	float wy = q[3] * q[1];
+		//	float wz = q[3] * q[2];
+		//	Matrix matrix;
+		//	matrix[0] = 1.0f - 2.0f * (yy + zz);
+		//	matrix[1] = 2.0f * (xy - wz);
+		//	matrix[2] = 2.0f * (xz + wy);
+		//	matrix[3] = 0.0;
+		//	matrix[4] = 2.0f * (xy + wz);
+		//	matrix[5] = 1.0f - 2.0f * (xx + zz);
+		//	matrix[6] = 2.0f * (yz - wx);
+		//	matrix[7] = 0.0;
+		//	matrix[8] = 2.0f * (xz - wy);
+		//	matrix[9] = 2.0f * (yz + wx);
+		//	matrix[10] = 1.0f - 2.0f * (xx + yy);
+		//	matrix[11] = 0.0;
+		//	matrix[12] = 0;
+		//	matrix[13] = 0;
+		//	matrix[14] = 0;
+		//	matrix[15] = 1;
+		//	return matrix;
+		//}
+
 
 		// Print quaternion
 		friend std::ostream& operator<<(std::ostream& os, const Quaternion& q) {
