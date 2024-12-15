@@ -17,7 +17,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	Triangle t;
 	plane Plane;
 	cube Cube;
-	Camera camera(Vec3(0.0f, 5.0f, -10.0f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
+	//Camera camera(Vec3(0.0f, 5.0f, -10.0f), Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
+	Camera camera(Vec3(0.0f, 5.0f, -10.0f), Vec3(0.0f, 1.0f, 0.0f));
+	loadModel load;
 
 	t.init();
 	std::string s1 = "vertexShader.txt";
@@ -32,9 +34,13 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 	shader.init(s1, s2, dx.device, &dx);
 	//shader.apply(&dx, dx.devicecontext);
 
+	//load.setCore(dx);
 
 	Plane.init(dx.devicecontext, &shader, dx, &camera);
 	//Cube.init(dx);
+	//std::string modelPath = "Resources/acacia_003.gem";
+	//load.load(modelPath);
+
 	
 
 
@@ -45,10 +51,18 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		win.processMessages();
 		//t.draw(dx.device, dx.devicecontext);
 
+		float aspectRatio = static_cast<float>(1024) / 1024; // Example aspect ratio calculation
+		Matrix viewMatrix = camera.getViewMatrix();
+		Matrix projectionMatrix = camera.getProjectionMatrix(aspectRatio);
+		Matrix vpMatrix = viewMatrix * projectionMatrix;
+
 		shader.apply(&dx, dx.devicecontext);
+		shader.updateConstantVS("staticMeshBuffer", "VP", &vpMatrix);
 
 		Plane.draw();
 		//Cube.draw();
+		//load.draw(dx.devicecontext);
+
 		dx.present();
 
 	}
