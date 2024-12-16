@@ -59,7 +59,7 @@ public:
 		memcpy(&buffer[cbVariable.offset], data, cbVariable.size);
 		dirty = 1;
 	}
-	void upload(DXCore* core, ID3D11DeviceContext* devicecontext)
+	void upload(DXCore* core)
 	{
 		if (dirty == 1)
 		{

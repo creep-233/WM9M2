@@ -4,6 +4,7 @@
 #include"shader.h"
 #include"GEMLoader.h"
 #include"Camera.h"
+#include"texture.h"
 
 struct STATIC_VERTEX
 {
@@ -14,6 +15,16 @@ struct STATIC_VERTEX
 	float tv;
 };
 
+struct ANIMATED_VERTEX
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec3 tangent;
+	float tu;
+	float tv;
+	unsigned int bonesIDs[4];
+	float boneWeights[4];
+};
 
 
 class mesh {
@@ -50,6 +61,10 @@ public:
 		init(&vertices[0], sizeof(STATIC_VERTEX), vertices.size(), &indices[0], indices.size(), device);
 	}
 
+	void init(std::vector<ANIMATED_VERTEX> vertices, std::vector<unsigned int> indices, DXCore& device)
+	{
+		init(&vertices[0], sizeof(ANIMATED_VERTEX), vertices.size(), &indices[0], indices.size(), device);
+	}
 
 	void draw(ID3D11DeviceContext* devicecontext) {
 
@@ -128,7 +143,7 @@ public:
 
 	void draw() {
 		if (shaders) {
-			shaders->updateConstantVS("staticMeshBuffer", "W", &planeWorld);
+			shaders->updateConstantVS("StaticModel", "staticMeshBuffer", "W", &planeWorld);
 			Mesh.draw(devicecontext);
 		}
 	}
@@ -206,34 +221,275 @@ public:
 	}
 
 	void draw() {
-		shader->updateConstantVS("staticMeshBuffer", "W", &planeWorld);
-		shader->updateConstantVS("staticMeshBuffer", "VP", &vp);
+		shader->updateConstantVS("StaticModel", "staticMeshBuffer", "W", &planeWorld);
+		shader->updateConstantVS("StaticModel", "staticMeshBuffer", "VP", &vp);
 		Mesh.draw(devicecontext);
 	}
 
 };
 
 
-class loadModel {
+//class loadModel {
+//public:
+//
+//	std::vector<mesh> meshes;  // 存储多个子网格
+//	mesh Mesh;
+//	DXCore core;
+//	shader* shaders;
+//
+//	void setCore(DXCore& _core) {
+//		core = _core;
+//	}
+//
+//	void load(std::string filename) {
+//
+//		std::vector<mesh> meshes;
+//
+//		GEMLoader::GEMModelLoader loader;
+//		std::vector<GEMLoader::GEMMesh> gemmeshes;
+//		loader.load(filename, gemmeshes);
+//		for (int i = 0; i < gemmeshes.size(); i++) {
+//			mesh mesh;
+//			std::vector<STATIC_VERTEX> vertices;
+//			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
+//				STATIC_VERTEX v;
+//				memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
+//				vertices.push_back(v);
+//			}
+//			Mesh.init(vertices, gemmeshes[i].indices, core);
+//			meshes.push_back(mesh);
+//		}
+//
+//	}
+//
+//	void draw(ID3D11DeviceContext* deviceContext) {
+//		for (auto& mesh : meshes) {
+//			mesh.draw(deviceContext);
+//		}
+//	}
+//
+//};
+
+
+
+
+
+class Sphere {
 public:
-
-	std::vector<mesh> meshes;  // 存储多个子网格
 	mesh Mesh;
-	DXCore core;
-
-	void setCore(DXCore& _core) {
-		core = _core;
+	Texture text;
+	// make sphere huge enough to create a sky!
+	STATIC_VERTEX addVertex(Vec3 p, Vec3 n, float tu, float tv)
+	{
+		// help function
+		STATIC_VERTEX v;
+		v.pos = p;
+		v.normal = n;
+		v.tangent = Vec3(0, 0, 0); // For now
+		v.tu = tu;
+		v.tv = tv;
+		return v;
 	}
 
-	void load(std::string filename) {
+	void init(DXCore& core, int rings, int segments, float radius, TextureManager* textures) {
+		std::vector<STATIC_VERTEX> vertices;
+		std::vector<unsigned int> indices;
+		// create sphere vertices
+		for (int lat = 0; lat <= rings; lat++) {
+			float theta = lat * M_PI / rings;
+			float sinTheta = sinf(theta);
+			float cosTheta = cosf(theta);
+			for (int lon = 0; lon <= segments; lon++) {
+				float phi = lon * 2.0f * M_PI / segments;
+				float sinPhi = sinf(phi);
+				float cosPhi = cosf(phi);
+				Vec3 position(radius * sinTheta * cosPhi, radius * cosTheta, radius * sinTheta * sinPhi);
+				Vec3 normal = position.normalize();
+				float tu = 1.0f - (float)lon / segments;
+				float tv = 1.0f - (float)lat / rings;
+				vertices.push_back(addVertex(position, normal, tu, tv));
+			}
+		}
 
-		std::vector<mesh> meshes;
 
+		// create indices vertices
+		for (int lat = 0; lat < rings; lat++)
+		{
+			for (int lon = 0; lon < segments; lon++)
+			{
+				int current = lat * (segments + 1) + lon;
+				int next = current + segments + 1;
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
+		//	text.load(&core, "SkyDome.png");
+
+		textures->load(&core, "SkyDome.png");
+		Mesh.init(vertices, indices, core);
+	}
+
+	void init(DXCore& core, int rings, int segments, float radius, std::string filename) {
+		std::vector<STATIC_VERTEX> vertices;
+		std::vector<unsigned int> indices;
+		// create sphere vertices
+		for (int lat = 0; lat <= rings; lat++) {
+			float theta = lat * M_PI / rings;
+			float sinTheta = sinf(theta);
+			float cosTheta = cosf(theta);
+			for (int lon = 0; lon <= segments; lon++) {
+				float phi = lon * 2.0f * M_PI / segments;
+				float sinPhi = sinf(phi);
+				float cosPhi = cosf(phi);
+				Vec3 position(radius * sinTheta * cosPhi, radius * cosTheta, radius * sinTheta * sinPhi);
+				Vec3 normal = position.normalize();
+				float tu = 1.0f - (float)lon / segments;
+				float tv = (float)lat / rings;
+				vertices.push_back(addVertex(position, normal, tu, tv));
+			}
+		}
+		for (int lat = 0; lat < rings; lat++)
+		{
+			for (int lon = 0; lon < segments; lon++)
+			{
+				int current = lat * (segments + 1) + lon;
+				int next = current + segments + 1;
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
+		text.load(&core, filename);
+		Mesh.init(vertices, indices, core);
+	}
+
+	void draw(ID3D11DeviceContext* devicecontext) {
+		Mesh.draw(devicecontext);
+	}
+	void updateWorld(Matrix w, shader shad, DXCore core) {
+		// submit world matrix to vertex shader
+		shad.updateConstantVS("StaticModel", "staticMeshBuffer", "W", &w); // adjust buffer
+		shad.apply(&core); // apply adjusted buffer immediately
+	}
+};
+
+class Hemisphere {
+public:
+	mesh Mesh;
+	Texture text;
+
+	STATIC_VERTEX addVertex(Vec3 p, Vec3 n, float tu, float tv) {
+		STATIC_VERTEX v;
+		v.pos = p;
+		v.normal = n;
+		v.tangent = Vec3(0, 0, 0); // For now
+		v.tu = tu;
+		v.tv = tv;
+		return v;
+	}
+	void init(DXCore& core, int rings, int segments, float radius, std::string filename, bool isUpper = true) {
+		std::vector<STATIC_VERTEX> vertices;
+		std::vector<unsigned int> indices;
+
+		int startLat = isUpper ? 0 : rings / 2;
+		int endLat = isUpper ? rings / 2 : rings;
+
+		for (int lat = startLat; lat <= endLat; lat++) {
+			float theta = lat * M_PI / rings;
+			float sinTheta = sinf(theta);
+			float cosTheta = cosf(theta);
+
+			for (int lon = 0; lon <= segments; lon++) {
+				float phi = lon * 2.0f * M_PI / segments;
+				float sinPhi = sinf(phi);
+				float cosPhi = cosf(phi);
+
+				Vec3 position(
+					radius * sinTheta * cosPhi,
+					radius * cosTheta,
+					radius * sinTheta * sinPhi
+				);
+				Vec3 normal = position.normalize();
+				float tu = 1.0f - (float)lon / segments;
+				float tv = isUpper ? (float)lat / (rings / 2) : (float)(lat - rings / 2) / (rings / 2);
+				vertices.push_back(addVertex(position, normal, tu, tv));
+			}
+		}
+
+		for (int lat = startLat; lat < endLat; lat++) {
+			for (int lon = 0; lon < segments; lon++) {
+				int current = lat * (segments + 1) + lon;
+				int next = current + segments + 1;
+
+				indices.push_back(current);
+				indices.push_back(next);
+				indices.push_back(current + 1);
+
+				indices.push_back(current + 1);
+				indices.push_back(next);
+				indices.push_back(next + 1);
+			}
+		}
+
+		text.load(&core, filename);
+		Mesh.init(vertices, indices, core);
+	}
+
+	void draw(ID3D11DeviceContext* devicecontext) {
+		Mesh.draw(devicecontext);
+	}
+
+	void updateWorld(Matrix w, shader shad, DXCore core) {
+		shad.updateConstantVS("StaticModel", "staticMeshBuffer", "W", &w); // Update world matrix
+		shad.apply(&core);
+	}
+};
+
+class loadModel {
+	// all complex meshes
+public:
+	std::vector<mesh> meshes;
+	mesh Mesh;
+	DXCore core;
+	std::vector<std::string> textureFilenames;
+
+
+	void init(std::string filename, DXCore& core, TextureManager* textures) {
 		GEMLoader::GEMModelLoader loader;
 		std::vector<GEMLoader::GEMMesh> gemmeshes;
 		loader.load(filename, gemmeshes);
 		for (int i = 0; i < gemmeshes.size(); i++) {
-			mesh mesh;
+			mesh Mesh;
+			std::vector<STATIC_VERTEX> vertices;
+			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
+				STATIC_VERTEX v;
+				memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
+				vertices.push_back(v);
+			}
+			textureFilenames.push_back(gemmeshes[i].material.find("diffuse").getValue());
+			textures->load(&core, gemmeshes[i].material.find("diffuse").getValue());
+			//textureFilenames.push_back(gemmeshes[i].material.find("normals").getValue());
+			//textures->load(&core, gemmeshes[i].material.find("normals").getValue());
+			Mesh.init(vertices, gemmeshes[i].indices, core);
+			meshes.push_back(Mesh);
+		}
+		std::cout << "Textures" << textures << std::endl;
+	}
+
+
+	void loadWithoutTexture(std::string filename, DXCore& core) {
+		GEMLoader::GEMModelLoader loader;
+		std::vector<GEMLoader::GEMMesh> gemmeshes;
+		loader.load(filename, gemmeshes);
+		for (int i = 0; i < gemmeshes.size(); i++) {
+			mesh Mesh;
 			std::vector<STATIC_VERTEX> vertices;
 			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
 				STATIC_VERTEX v;
@@ -241,17 +497,30 @@ public:
 				vertices.push_back(v);
 			}
 			Mesh.init(vertices, gemmeshes[i].indices, core);
-			meshes.push_back(mesh);
+			meshes.push_back(Mesh);
+		}
+	}
+	void updateWorld(Matrix w, shader shad, DXCore core) {
+		// submit world matrix to vertex shader
+		shad.updateConstantVS("StaticModel", "staticMeshBuffer", "W", &w); // adjust buffer
+		shad.apply(&core); // apply adjusted buffer immediately
+	}
+
+	void draw(ID3D11DeviceContext* devicecontext) {
+		for (int i = 0; i < meshes.size(); i++)
+		{
+			meshes[i].draw(devicecontext);
 		}
 
 	}
 
-	void draw(ID3D11DeviceContext* deviceContext) {
-		for (auto& mesh : meshes) {
-			mesh.draw(deviceContext);
+
+	void drawTexture(DXCore* core, ID3D11DeviceContext* devicecontext, shader shaders, TextureManager* textureM) {
+		for (int i = 0; i < meshes.size(); i++)
+		{
+			shaders.updateShaderPS(core, "tex", textureM->find(textureFilenames[i]));
+			meshes[i].draw(devicecontext);
 		}
+
 	}
-
-
-
 };

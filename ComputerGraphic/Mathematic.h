@@ -10,6 +10,9 @@
 #define max(a,b) (a>b ? a:b)
 #define min(a,b) (a<b ? a:b)
 
+#define M_PI 3.14159265358979323846f
+
+
 	template<typename T>
 	static T lerp(const T a, const T b, float t)
 	{
@@ -47,6 +50,8 @@
 		Vec2& operator*=(const float val) { x *= val; y *= val; return *this; }
 		Vec2& operator/=(const float val) { x /= val; y /= val; return *this; }
 		Vec2 operator-() const { return Vec2(-v[0], -v[1]); }
+
+
 
 		// get the length of vector
 		float getLength() const {
@@ -107,8 +112,15 @@
 		}
 
 		Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
-		Vec3 operator-(const Vec3& v) { return Vec3(x - v.x, y - v.y, z - v.z); }
-		Vec3 operator*(const Vec3 v) { return Vec3(x * v.x, y * v.y, z * v.z); }
+		//Vec3 operator-(const Vec3& v) { return Vec3(x - v.x, y - v.y, z - v.z); }
+		Vec3 operator- (const Vec3& v) const {
+			return Vec3(x - v.x, y - v.y, z - v.z);
+		}
+
+		//Vec3 operator*(const Vec3 v) { return Vec3(x * v.x, y * v.y, z * v.z); }
+		Vec3 operator*(const Vec3& v) const {
+			return Vec3(x * v.x, y * v.y, z * v.z);
+		}
 		Vec3 operator/(const Vec3 v) { return Vec3(x / v.x, y / v.y, z / v.z); }
 		Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 		Vec3& operator*=(const Vec3& v) { x *= v.x; y *= v.y; z *= v.z; return *this; }
@@ -118,6 +130,12 @@
 		Vec3& operator*=(const float val) { x *= val; y *= val; z *= val; return *this; }
 		Vec3& operator/=(const float val) { x /= val; y /= val; z /= val; return *this; }
 		Vec3 operator-() const { return Vec3(-v[0], -v[1], -v[2]); }
+		Vec3& operator-= (const Vec3 v) {
+			x -= v.x;
+			y -= v.y;
+			z -= v.z;
+			return *this;
+		}
 
 		friend Vec3 operator*(float scalar, const Vec3& vec) {
 			return Vec3(vec.x * scalar, vec.y * scalar, vec.z * scalar);
@@ -480,6 +498,25 @@
 		}
 
 
+		// 组合缩放、旋转和平移的变换矩阵
+		static Matrix worldTrans(const Vec3& scaling, const Vec3& rotation, const Vec3& translation) {
+			// 创建缩放矩阵
+			Matrix scale = Matrix::scaling(scaling);
+
+			// 创建旋转矩阵
+			Matrix rotateX = Matrix::rotateX(rotation.x);
+			Matrix rotateY = Matrix::rotateY(rotation.y);
+			Matrix rotateZ = Matrix::rotateZ(rotation.z);
+			Matrix rotationMatrix = rotateZ * rotateY * rotateX; // ZYX顺序旋转
+
+			// 创建平移矩阵
+			Matrix translate = Matrix::translation(translation);
+
+			// 组合矩阵：先缩放 -> 旋转 -> 平移
+			return scale * rotationMatrix * translate;
+		}
+
+
 
 	};
 
@@ -560,130 +597,247 @@
 		}
 	};
 
-	class Quaternion {
-	public:
-		float w, x, y, z;
+	//class Quaternion {
+	//public:
+	//	float w, x, y, z;
 
-		// Constructor
-		Quaternion(float _w = 1, float _x = 0, float _y = 0, float _z = 0)
-			: w(_w), x(_x), y(_y), z(_z) {}
-
-
-
-		// Normalize the quaternion
-		void normalize() {
-			float norm = std::sqrtf(SQ(w) + SQ(x) + SQ(y) + SQ(z));
-			w /= norm;
-			x /= norm;
-			y /= norm;
-			z /= norm;
-		}
-
-		// Quaternion multiplication
-		Quaternion operator*(const Quaternion& q) const {
-			return Quaternion(
-				w * q.w - x * q.x - y * q.y - z * q.z,
-				w * q.x + x * q.w + y * q.z - z * q.y,
-				w * q.y - x * q.z + y * q.w + z * q.x,
-				w * q.z + x * q.y - y * q.x + z * q.w
-			);
-		}
-
-		// Quaternion addition
-		Quaternion operator+(const Quaternion& q) const {
-			return Quaternion(w + q.w, x + q.x, y + q.y, z + q.z);
-		}
-
-		// Quaternion subtraction
-		Quaternion operator-(const Quaternion& q) const {
-			return Quaternion(w - q.w, x - q.x, y - q.y, z - q.z);
-		}
-
-		// Scalar multiplication
-		Quaternion operator*(float scalar) const {
-			return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar);
-		}
-
-		// Dot product
-		float dot(const Quaternion& q) const {
-			return w * q.w + x * q.x + y * q.y + z * q.z;
-		}
-
-		// Slerp (Spherical Linear Interpolation)
-		static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t) {
-			float dot = q1.dot(q2);
-			const float threshold = 0.9995f;
-
-			if (dot > threshold) {
-				// If the quaternions are nearly identical, use linear interpolation
-				Quaternion result = q1 + (q2 - q1) * t;
-				result.normalize();
-				return result;
-			}
-
-			dot = clamp(dot, -1.0f, 1.0f);
-			float theta_0 = std::acosf(dot);
-			float theta = theta_0 * t;
-
-			Quaternion q3 = q2 - q1 * dot;
-			q3.normalize();
-
-			return q1 * std::cosf(theta) + q3 * std::sinf(theta);
-		}
-
-		// Convert to rotation matrix
-		Matrix toMatrix() const {
-			Matrix mat;
-			mat.a[0][0] = 1 - 2 * (SQ(y) + SQ(z));
-			mat.a[0][1] = 2 * (x * y - z * w);
-			mat.a[0][2] = 2 * (x * z + y * w);
-			mat.a[1][0] = 2 * (x * y + z * w);
-			mat.a[1][1] = 1 - 2 * (SQ(x) + SQ(z));
-			mat.a[1][2] = 2 * (y * z - x * w);
-			mat.a[2][0] = 2 * (x * z - y * w);
-			mat.a[2][1] = 2 * (y * z + x * w);
-			mat.a[2][2] = 1 - 2 * (SQ(x) + SQ(y));
-			return mat;
-		}
-
-		//Matrix toMatrix()
-		//{
-		//	float xx = q[0] * q[0];
-		//	float xy = q[0] * q[1];
-		//	float xz = q[0] * q[2];
-		//	float yy = q[1] * q[1];
-		//	float zz = q[2] * q[2];
-		//	float yz = q[1] * q[2];
-		//	float wx = q[3] * q[0];
-		//	float wy = q[3] * q[1];
-		//	float wz = q[3] * q[2];
-		//	Matrix matrix;
-		//	matrix[0] = 1.0f - 2.0f * (yy + zz);
-		//	matrix[1] = 2.0f * (xy - wz);
-		//	matrix[2] = 2.0f * (xz + wy);
-		//	matrix[3] = 0.0;
-		//	matrix[4] = 2.0f * (xy + wz);
-		//	matrix[5] = 1.0f - 2.0f * (xx + zz);
-		//	matrix[6] = 2.0f * (yz - wx);
-		//	matrix[7] = 0.0;
-		//	matrix[8] = 2.0f * (xz - wy);
-		//	matrix[9] = 2.0f * (yz + wx);
-		//	matrix[10] = 1.0f - 2.0f * (xx + yy);
-		//	matrix[11] = 0.0;
-		//	matrix[12] = 0;
-		//	matrix[13] = 0;
-		//	matrix[14] = 0;
-		//	matrix[15] = 1;
-		//	return matrix;
-		//}
+	//	// Constructor
+	//	Quaternion(float _w = 1, float _x = 0, float _y = 0, float _z = 0)
+	//		: w(_w), x(_x), y(_y), z(_z) {}
 
 
-		// Print quaternion
-		friend std::ostream& operator<<(std::ostream& os, const Quaternion& q) {
-			os << "Quaternion(" << q.w << ", " << q.x << ", " << q.y << ", " << q.z << ")";
-			return os;
-		}
+
+	//	// Normalize the quaternion
+	//	void normalize() {
+	//		float norm = std::sqrtf(SQ(w) + SQ(x) + SQ(y) + SQ(z));
+	//		w /= norm;
+	//		x /= norm;
+	//		y /= norm;
+	//		z /= norm;
+	//	}
+
+	//	// Quaternion multiplication
+	//	Quaternion operator*(const Quaternion& q) const {
+	//		return Quaternion(
+	//			w * q.w - x * q.x - y * q.y - z * q.z,
+	//			w * q.x + x * q.w + y * q.z - z * q.y,
+	//			w * q.y - x * q.z + y * q.w + z * q.x,
+	//			w * q.z + x * q.y - y * q.x + z * q.w
+	//		);
+	//	}
+
+	//	// Quaternion addition
+	//	Quaternion operator+(const Quaternion& q) const {
+	//		return Quaternion(w + q.w, x + q.x, y + q.y, z + q.z);
+	//	}
+
+	//	// Quaternion subtraction
+	//	Quaternion operator-(const Quaternion& q) const {
+	//		return Quaternion(w - q.w, x - q.x, y - q.y, z - q.z);
+	//	}
+
+	//	// Scalar multiplication
+	//	Quaternion operator*(float scalar) const {
+	//		return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar);
+	//	}
+
+	//	// Dot product
+	//	float dot(const Quaternion& q) const {
+	//		return w * q.w + x * q.x + y * q.y + z * q.z;
+	//	}
+
+	//	// Slerp (Spherical Linear Interpolation)
+	//	static Quaternion slerp(const Quaternion& q1, const Quaternion& q2, float t) {
+	//		float dot = q1.dot(q2);
+	//		const float threshold = 0.9995f;
+
+	//		if (dot > threshold) {
+	//			// If the quaternions are nearly identical, use linear interpolation
+	//			Quaternion result = q1 + (q2 - q1) * t;
+	//			result.normalize();
+	//			return result;
+	//		}
+
+	//		dot = clamp(dot, -1.0f, 1.0f);
+	//		float theta_0 = std::acosf(dot);
+	//		float theta = theta_0 * t;
+
+	//		Quaternion q3 = q2 - q1 * dot;
+	//		q3.normalize();
+
+	//		return q1 * std::cosf(theta) + q3 * std::sinf(theta);
+	//	}
+
+	//	 //Convert to rotation matrix
+	//	//Matrix toMatrix() const {
+	//	//	Matrix mat;
+	//	//	mat.a[0][0] = 1 - 2 * (SQ(y) + SQ(z));
+	//	//	mat.a[0][1] = 2 * (x * y - z * w);
+	//	//	mat.a[0][2] = 2 * (x * z + y * w);
+	//	//	mat.a[1][0] = 2 * (x * y + z * w);
+	//	//	mat.a[1][1] = 1 - 2 * (SQ(x) + SQ(z));
+	//	//	mat.a[1][2] = 2 * (y * z - x * w);
+	//	//	mat.a[2][0] = 2 * (x * z - y * w);
+	//	//	mat.a[2][1] = 2 * (y * z + x * w);
+	//	//	mat.a[2][2] = 1 - 2 * (SQ(x) + SQ(y));
+	//	//	return mat;
+	//	//}
+
+	//	//Matrix toMatrix()
+	//	//{
+	//	//	float xx = q[0] * q[0];
+	//	//	float xy = q[0] * q[1];
+	//	//	float xz = q[0] * q[2];
+	//	//	float yy = q[1] * q[1];
+	//	//	float zz = q[2] * q[2];
+	//	//	float yz = q[1] * q[2];
+	//	//	float wx = q[3] * q[0];
+	//	//	float wy = q[3] * q[1];
+	//	//	float wz = q[3] * q[2];
+	//	//	Matrix matrix;
+	//	//	matrix[0] = 1.0f - 2.0f * (yy + zz);
+	//	//	matrix[1] = 2.0f * (xy - wz);
+	//	//	matrix[2] = 2.0f * (xz + wy);
+	//	//	matrix[3] = 0.0;
+	//	//	matrix[4] = 2.0f * (xy + wz);
+	//	//	matrix[5] = 1.0f - 2.0f * (xx + zz);
+	//	//	matrix[6] = 2.0f * (yz - wx);
+	//	//	matrix[7] = 0.0;
+	//	//	matrix[8] = 2.0f * (xz - wy);
+	//	//	matrix[9] = 2.0f * (yz + wx);
+	//	//	matrix[10] = 1.0f - 2.0f * (xx + yy);
+	//	//	matrix[11] = 0.0;
+	//	//	matrix[12] = 0;
+	//	//	matrix[13] = 0;
+	//	//	matrix[14] = 0;
+	//	//	matrix[15] = 1;
+	//	//	return matrix;
+	//	//}
+
+
+	//	Matrix toMatrix() const {
+	//		float xx = x * x;
+	//		float xy = x * y;
+	//		float xz = x * z;
+	//		float yy = y * y;
+	//		float zz = z * z;
+	//		float yz = y * z;
+	//		float wx = w * x;
+	//		float wy = w * y;
+	//		float wz = w * z;
+
+	//		Matrix matrix;
+	//		matrix[0] = 1.0f - 2.0f * (yy + zz);
+	//		matrix[1] = 2.0f * (xy - wz);
+	//		matrix[2] = 2.0f * (xz + wy);
+	//		matrix[3] = 0.0f;
+
+	//		matrix[4] = 2.0f * (xy + wz);
+	//		matrix[5] = 1.0f - 2.0f * (xx + zz);
+	//		matrix[6] = 2.0f * (yz - wx);
+	//		matrix[7] = 0.0f;
+
+	//		matrix[8] = 2.0f * (xz - wy);
+	//		matrix[9] = 2.0f * (yz + wx);
+	//		matrix[10] = 1.0f - 2.0f * (xx + yy);
+	//		matrix[11] = 0.0f;
+
+	//		matrix[12] = 0.0f;
+	//		matrix[13] = 0.0f;
+	//		matrix[14] = 0.0f;
+	//		matrix[15] = 1.0f;
+
+	//		return matrix;
+	//	}
+
+
+
+	//	// Print quaternion
+	//	friend std::ostream& operator<<(std::ostream& os, const Quaternion& q) {
+	//		os << "Quaternion(" << q.w << ", " << q.x << ", " << q.y << ", " << q.z << ")";
+	//		return os;
+	//	}
+	//};
+
+class Quaternion {
+public:
+	union {
+		struct {
+			float a;
+			float b;
+			float c;
+			float d;
+		};
+		float q[4];
 	};
+	Quaternion() {
+		a = 0;
+		b = 0;
+		c = 0;
+		d = 0;
+	}
+	Quaternion(float _a, float _b, float _c, float _d) {
+		a = _a;
+		b = _b;
+		c = _c;
+		d = _d;
+	}
+
+	float mod(Quaternion q0) const {
+		return float(sqrt(q0.a * q0.a + q0.b * q0.b + q0.c * q0.c + q0.d * q0.d));
+	}
+
+	float Dot(const Quaternion& q) const {
+		return float(a * q.a + b * q.b + c * q.c + d * q.d);
+	}
+
+	static Quaternion Slerp(const Quaternion q0, const Quaternion q1, float t) {
+		float dot = q0.Dot(q1);
+		Quaternion q1New = q1;
+		// if dot product is negative, need to negate q1 to make sure the path is shortest
+		if (dot < 0) {
+			q1New = Quaternion(-q1.a, -q1.b, -q1.c, -q1.d);
+			dot = -dot; // change dot to positive
+		}
+
+		// angle between the quaternions
+		dot = fmin(fmax(dot, -1.0f), 1.0f);
+		float theta = acosf(dot);
+		if (theta == 0)
+		{
+			return q0;
+		}
+		float sinTheta = sinf(theta);
+		// weight
+		float weight0 = sinf((1 - t) * theta) / sinTheta;
+		float weight1 = sinf(t * theta) / sinTheta;
+		return Quaternion(weight0 * q0.a + weight1 * q1New.a,
+			weight0 * q0.b + weight1 * q1New.b,
+			weight0 * q0.c + weight1 * q1New.c,
+			weight0 * q0.d + weight1 * q1New.d);
+	}
+
+	Matrix toMatrix() {
+		Matrix temp;
+		temp.m[0] = 1 - 2 * b * b - 2 * c * c;
+		temp.m[1] = 2 * a * b - 2 * c * d;
+		temp.m[2] = 2 * a * c + 2 * b * d;
+		temp.m[3] = 0;
+
+		temp.m[4] = 2 * a * b + 2 * c * d;
+		temp.m[5] = 1 - 2 * a * a - 2 * c * c;
+		temp.m[6] = 2 * b * c - 2 * a * d;
+		temp.m[7] = 0;
+
+		temp.m[8] = 2 * a * c - 2 * b * d;
+		temp.m[9] = 2 * b * c + 2 * a * d;
+		temp.m[10] = 1 - 2 * a * a - 2 * b * b;
+		temp.m[11] = 0;
+		return temp;
+	}
+
+};
+
 
 	class Color {
 	public:

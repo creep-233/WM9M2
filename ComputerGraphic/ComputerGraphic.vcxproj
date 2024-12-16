@@ -133,7 +133,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="adapter.h" />
+    <ClInclude Include="anime.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Character.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="GEbase.h" />
     <ClInclude Include="GEMLoader.h" />
@@ -142,7 +145,7 @@
     <ClInclude Include="shader.h" />
     <ClInclude Include="ShaderReflection.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="texture.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,0 +1,31 @@
+cbuffer staticMeshBuffer
+{
+    float4x4 W;
+    float4x4 VP;      // Camera view-projection (not necessarily needed for shadow pass)
+    float4x4 LightVP; // Light's view-projection matrix
+};
+
+struct VS_INPUT
+{
+    float4 Pos : POSITION;
+    float3 Normal : NORMAL;      // Not required for shadow pass, but can be left in
+    float3 Tangent : TANGENT;    // Same as above
+    float2 TexCoords : TEXCOORD; // Same as above
+};
+
+struct PS_INPUT
+{
+    float4 Pos : SV_POSITION;     // Vertex position in clip space (for rasterization)
+    float4 LightPos : TEXCOORD0;  // Position in light clip space
+};
+
+PS_INPUT VS(VS_INPUT input)
+{
+    PS_INPUT output;
+    float4 worldPos = mul(input.Pos, W);
+
+    output.Pos = mul(worldPos, VP);      
+    output.LightPos = mul(worldPos, LightVP);
+
+    return output;
+}

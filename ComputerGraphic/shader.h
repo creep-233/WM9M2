@@ -126,6 +126,40 @@ public:
 
     //}
 
+    void compileVS(DXCore* core, std::string filename) {
+        // compile vertex shader
+        ID3DBlob* compiledVertexShader;
+        ID3DBlob* status;
+        // number is version use.
+        HRESULT hr = D3DCompile(filename.c_str(), strlen(filename.c_str()), NULL, NULL, NULL, "VS", "vs_5_0", 0, 0, &compiledVertexShader, &status);
+        core->device->CreateVertexShader(compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), NULL, &vertexShader);
+        if (FAILED(hr)) {
+            MessageBoxA(NULL, (char*)status->GetBufferPointer(), "vertex shader error", 0); // check if open successfully
+            exit(0);
+        }
+
+        //  create layout only for vertices.
+        D3D11_INPUT_ELEMENT_DESC layoutDesc[] =
+        {
+            { "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOUR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        core->device->CreateInputLayout(layoutDesc, 2, compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), &layout);
+    }
+
+    void compilePS(DXCore* core, std::string filename) {
+        // compile pixel shader
+        ID3DBlob* compiledPixelShader;
+        ID3DBlob* status;
+        HRESULT hr = D3DCompile(filename.c_str(), strlen(filename.c_str()), NULL, NULL, NULL, "PS", "ps_5_0", 0, 0, &compiledPixelShader, &status);
+        core->device->CreatePixelShader(compiledPixelShader->GetBufferPointer(), compiledPixelShader->GetBufferSize(), NULL, &pixelShader);
+        if (FAILED(hr)) {
+            MessageBoxA(NULL, (char*)status->GetBufferPointer(), "pixel shader error", 0); // check if open successfully
+            exit(0);
+        }
+    }
+
+
     void loadPS(DXCore* core, std::string hlsl)
     {
         ID3DBlob* shader;
@@ -172,6 +206,52 @@ public:
 
 
 
+    void loadAnimationVS(DXCore* core, std::string hlsl) {
+        ID3DBlob* compiledVertexShader;
+        ID3DBlob* status;
+        HRESULT hr = D3DCompile(hlsl.c_str(), strlen(hlsl.c_str()), NULL, NULL, NULL, "VS", "vs_5_0", 0, 0, &compiledVertexShader, &status);
+        if (FAILED(hr))
+        {
+            MessageBoxA(NULL, (char*)status->GetBufferPointer(), "Vertex Shader Error", 0);
+            exit(0);
+        }
+
+        core->device->CreateVertexShader(compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), NULL, &vertexShader);
+        D3D11_INPUT_ELEMENT_DESC layoutDesc[] = {
+            { "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 								D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 								D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 								D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 								D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "BONEIDS", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "BONEWEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+        core->device->CreateInputLayout(layoutDesc, 6, compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), &layout);
+        ConstantBufferReflection reflection;
+        reflection.build(core, compiledVertexShader, vsConstantBuffers, textureBindPointsVS, ShaderStage::VertexShader);
+    }
+
+
+
+    void loadInstanceVS(DXCore* core, std::string hlsl) {
+        ID3DBlob* compiledVertexShader;
+        ID3DBlob* status;
+        HRESULT hr = D3DCompile(hlsl.c_str(), strlen(hlsl.c_str()), NULL, NULL, NULL, "VS", "vs_5_0", 0, 0, &compiledVertexShader, &status);
+        if (FAILED(hr))
+        {
+            MessageBoxA(NULL, (char*)status->GetBufferPointer(), "Vertex Shader Error", 0);
+            exit(0);
+        }
+        core->device->CreateVertexShader(compiledVertexShader->GetBufferPointer(), compiledVertexShader->GetBufferSize(), NULL, &vertexShader);
+        D3D11_INPUT_ELEMENT_DESC layoutDesc[] =
+        {
+            { "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, 							D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "INSTANCEPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, 							D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+        };
+    }
+
     //constantBuffer update
 
     void updateConstant(std::string constantBufferName, std::string variableName, void* data, std::vector<ConstantBuffer>& buffers)
@@ -187,23 +267,29 @@ public:
     }
 
 
-    void updateConstantVS(std::string constantBufferName, std::string variableName, void* data)
+    void updateConstantVS(std::string name, std::string constantBufferName, std::string variableName, void* data)
     {
         updateConstant(constantBufferName, variableName, data, vsConstantBuffers);
     }
-    void updateConstantPS(std::string constantBufferName, std::string variableName, void* data)
+    void updateConstantPS(std::string name, std::string constantBufferName, std::string variableName, void* data)
     {
         updateConstant(constantBufferName, variableName, data, psConstantBuffers);
     }
 
 
 
+    void updateShaderPS(DXCore* core, std::string name, ID3D11ShaderResourceView* tex) {
 
-    void apply(DXCore* core, ID3D11DeviceContext* devicecontext/*, std::string name, ID3D11ShaderResourceView* srv, ID3D11SamplerState* state*/) {
+        core->devicecontext->PSSetShaderResources(textureBindPointsPS[name], 1, &tex);
+    }
+
+
+    void apply(DXCore* core) {
 
         core->devicecontext->IASetInputLayout(layout);
         core->devicecontext->VSSetShader(vertexShader, NULL, 0);
         core->devicecontext->PSSetShader(pixelShader, NULL, 0);
+        core->devicecontext->PSSetConstantBuffers(0, 1, &constantBuffer);
         //core->devicecontext->PSSetShaderResources(textureBindPointsPS[name], 1, &srv);
         ////core->devicecontext->PSSetSamplers(0, 1, &state);
         //Sampler.bind(core, state);
@@ -211,11 +297,11 @@ public:
 
         for (int i = 0; i < vsConstantBuffers.size(); i++)
         {
-            vsConstantBuffers[i].upload(core, devicecontext);
+            vsConstantBuffers[i].upload(core);
         }
         for (int i = 0; i < psConstantBuffers.size(); i++)
         {
-            psConstantBuffers[i].upload(core, devicecontext);
+            psConstantBuffers[i].upload(core);
         }
     }
 
@@ -247,6 +333,29 @@ public:
     //std::_In_place_key_extract_map < std::string, shader > shaders;
 
     
+
+    void initializeAnimationShader(std::string vertexFile, std::string pixelFile, DXCore* core) {
+        std::string vertexShaderCode = readFile(vertexFile);
+        std::string pixelShaderCode = readFile(pixelFile);
+        loadAnimationVS(core, vertexShaderCode);
+        loadPS(core, pixelShaderCode);
+    }
+
+    void initializeStaticShader(std::string vertexFile, std::string pixelFile, DXCore* core) {
+        std::string vertexShaderCode = readFile(vertexFile);
+        std::string pixelShaderCode = readFile(pixelFile);
+        loadVS(vertexShaderCode, core);
+        loadPS(core, pixelShaderCode);
+    }
+
+    void initializeInstancedShader(std::string vertexFile, std::string pixelFile, DXCore* core) {
+        std::string vertexShaderCode = readFile(vertexFile);
+        std::string pixelShaderCode = readFile(pixelFile);
+        compileVS(core, vertexShaderCode);
+        compilePS(core, pixelShaderCode);
+    }
+
+
 private:
 
 };

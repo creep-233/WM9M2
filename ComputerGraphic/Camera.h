@@ -1,181 +1,141 @@
-//#pragma once
-//#include"DXCore.h"
-//#include"Mathematic.h"
-//#include<iostream>
-//#include<cmath>  // 确保包含此头文件，用于数学运算
-//
-//#define DEG_TO_RAD 0.0174532925f  // 1 degree = 0.0174532925 radians
-//
-//class Camera {
-//public:
-//    Vec3 position;
-//    Vec3 target;
-//    Vec3 up;
-//
-//    float pitch = 0.0f; // 控制上下视角
-//    float yaw = -90.0f; // 控制左右视角，初始设为 -90 度以便朝向 -Z 轴
-//
-//    Camera(Vec3 pos, Vec3 tgt, Vec3 upDir)
-//        : position(pos), target(tgt), up(upDir) {}
-//
-//    // 获取 View 矩阵
-//    Matrix getViewMatrix() {
-//        return lookAt(position, target, up);
-//    }
-//
-//    // 更新相机方向
-//    void updateDirection(float deltaX, float deltaY) {
-//        const float sensitivity = 0.1f;
-//        yaw += deltaX * sensitivity;
-//        pitch += deltaY * sensitivity;
-//
-//        // 限制俯仰角，防止视角翻转
-//        if (pitch > 89.0f) pitch = 89.0f;
-//        if (pitch < -89.0f) pitch = -89.0f;
-//
-//        // 将俯仰角和偏航角从度数转换为弧度
-//        float pitchRadians = pitch * DEG_TO_RAD;
-//        float yawRadians = yaw * DEG_TO_RAD;
-//
-//        // 根据俯仰和偏航角计算前向量
-//        Vec3 front;
-//        front.x = cosf(yawRadians) * cosf(pitchRadians);
-//        front.y = sinf(pitchRadians);
-//        front.z = sinf(yawRadians) * cosf(pitchRadians);
-//
-//        front = front.normalize();  // 确保前向量是单位向量
-//        target = position + front;  // 更新相机的目标点
-//    }
-//
-//    // 更新相机位置（例如前后左右移动）
-//    void move(const Vec3& direction, float speed) {
-//        Vec3 forward = (target - position);
-//        forward.normalize();
-//
-//        // 侧向量
-//        Vec3 right = cross(forward, up);
-//        right.normalize();
-//
-//        Vec3 movement = direction.x * right + direction.z * forward + direction.y * up;
-//
-//        position += movement * speed;
-//        target += movement * speed;
-//    }
-//
-//private:
-//    // Helper function to convert degrees to radians
-//    float toRadians(float degrees) {
-//        return degrees * DEG_TO_RAD;
-//    }
-//};
-
-
-
 #pragma once
-#include "DXCore.h"
 #include "Mathematic.h"
-#include <iostream>
+#include "GEBase.h"
 #include <cmath>
-
-#define DEG_TO_RAD 0.0174532925f // 1 degree = 0.0174532925 radians
+#include <windows.h>
 
 class Camera {
 public:
-    Vec3 position;
-    Vec3 upWorld;     // 世界坐标系的上向量
-    Vec3 forward;     // 前向向量
-    Vec3 right;       // 右向向量
-    Vec3 upLocal;     // 本地上向量
+    Vec3 position;      // Camera position
+    Vec3 rotation;      // Camera rotation (pitch, yaw, roll)
 
-    float pitch = 0.0f; // 控制上下视角
-    float yaw = -90.0f; // 控制左右视角，初始设为 -90 度以便朝向 -Z 轴
+    Vec3 upWorld;       // World up vector
+    Vec3 forward;       // Forward vector
+    Vec3 right;         // Right vector
+    Vec3 upLocal;       // Local up vector
 
-    float fov = 45.0f;   // 视角
-    float nearPlane = 0.1f; // 近平面
-    float farPlane = 100.0f; // 远平面
+    Matrix viewMatrix;  // View matrix
+    Matrix projectionMatrix; // Projection matrix
 
-    Camera(Vec3 pos, Vec3 upDir, float initialFov = 45.0f)
-        : position(pos), upWorld(upDir), fov(initialFov) {
-        updateVectors(); // 初始化方向向量
+    float fov;          // Field of view
+    float nearPlane;    // Near clipping plane
+    float farPlane;     // Far clipping plane
+
+    POINT currentMousePos;
+    POINT lastMousePos;
+    bool firstMouseCapture;
+
+    // Constructor
+    Camera(float _fov = 1.5708f, float _nearPlane = 0.1f, float _farPlane = 100.0f)
+        : fov(_fov), nearPlane(_nearPlane), farPlane(_farPlane), firstMouseCapture(true) {
+        position = Vec3(0.0f, 0.0f, 0.0f);
+        rotation = Vec3(0.0f, 0.0f, 0.0f);
+        upWorld = Vec3(0.0f, 1.0f, 0.0f);
+        updateVectors();
     }
 
-    // 获取 View 矩阵
-    Matrix getViewMatrix() {
-        Vec3 target = position + forward;
-        return lookAt(position, target, upLocal);
+    // Set position
+    void setPosition(float x, float y, float z) {
+        position = Vec3(x, y, z);
     }
 
-    // 获取投影矩阵
-    Matrix getProjectionMatrix(float aspectRatio) {
-        return PerPro(aspectRatio, 1.0f, fov, farPlane, nearPlane);
+    void setPosition(const Vec3& v) {
+        position = v;
     }
 
-    // 鼠标输入更新方向
-    void updateDirection(float deltaX, float deltaY, float sensitivity = 0.1f) {
-        yaw += deltaX * sensitivity;
-        pitch += deltaY * sensitivity;
-
-        // 限制俯仰角，防止视角翻转
-        if (pitch > 89.0f) pitch = 89.0f;
-        if (pitch < -89.0f) pitch = -89.0f;
-
-        updateVectors(); // 更新方向向量
+    // Set rotation
+    void setRotation(float pitch, float yaw, float roll) {
+        rotation = Vec3(pitch, yaw, roll);
+        updateVectors();
     }
 
-    // 键盘输入更新位置（前后左右移动）
-    void move(const Vec3& direction, float speed) {
-        Vec3 movement = direction.x * right + direction.y * upLocal + direction.z * forward;
-        movement.normalize(); // 确保移动方向是单位向量
-        position += movement * speed;
+    void setRotation(const Vec3& v) {
+        rotation = v;
+        updateVectors();
     }
 
-    // 重置相机到默认位置和方向
-    void resetCamera(Vec3 defaultPosition = Vec3(0.0f, 5.0f, -10.0f), float defaultYaw = -90.0f, float defaultPitch = 0.0f) {
-        position = defaultPosition;
-        yaw = defaultYaw;
-        pitch = defaultPitch;
-        updateVectors(); // 更新方向向量
+    // Reset camera to default position and rotation
+    void resetCamera() {
+        position = Vec3(11.0f, 5.0f, 11.0f);
+        rotation = Vec3(0.0f, 0.0f, 0.0f);
+        updateVectors();
     }
 
-    // 设置相机视角
-    void setFov(float newFov) {
-        fov = newFov;
+    // Process keyboard input for movement
+    void processInput(bool moveForward, bool moveBackward, bool moveLeft, bool moveRight, bool reset, float speed, float dt) {
+        if (reset) {
+            resetCamera();
+        }
+
+        Vec3 horizontalForward = Vec3(forward.x, 0.0f, forward.z).normalize();
+        Vec3 horizontalRight = Vec3(right.x, 0.0f, right.z).normalize();
+
+
+        if (moveForward) position += forward * speed * dt;
+        if (moveBackward) position -= forward * speed * dt;
+        if (moveLeft) position -= right * speed * dt;
+        if (moveRight) position += right * speed * dt;
     }
 
-    // 鼠标捕获，用于窗口内的相机旋转
+    // Process mouse input to adjust rotation
+    void processMouse(float deltaX, float deltaY, float mouseSensitivity) {
+        rotation.y -= deltaX * mouseSensitivity;
+        rotation.x -= deltaY * mouseSensitivity;
+
+        // Clamp pitch to avoid flipping
+        rotation.x = clamp(rotation.x, -1.5f, 1.5f); // ~85 degrees
+        updateVectors();
+    }
+
+    // Capture mouse input for rotation
     void captureInput(HWND hwnd, float mouseSensitivity = 0.1f) {
-        POINT currentMousePos;
         GetCursorPos(&currentMousePos);
         ScreenToClient(hwnd, &currentMousePos);
 
-        static POINT lastMousePos = currentMousePos;
+        float deltaX = 0.0f;
+        float deltaY = 0.0f;
 
-        float deltaX = (float)(currentMousePos.x - lastMousePos.x);
-        float deltaY = (float)(currentMousePos.y - lastMousePos.y);
+        if (!firstMouseCapture) {
+            deltaX = static_cast<float>(currentMousePos.x - lastMousePos.x);
+            deltaY = static_cast<float>(currentMousePos.y - lastMousePos.y);
+        }
+        else {
+            firstMouseCapture = false;
+        }
 
         lastMousePos = currentMousePos;
 
         if (deltaX != 0.0f || deltaY != 0.0f) {
-            updateDirection(deltaX, deltaY, mouseSensitivity);
+            processMouse(deltaX, deltaY, mouseSensitivity);
         }
     }
 
-private:
-    // 更新相机的方向向量
+    // Update direction vectors based on rotation
     void updateVectors() {
-        float cosPitch = cosf(pitch * DEG_TO_RAD);
-        float sinPitch = sinf(pitch * DEG_TO_RAD);
-        float cosYaw = cosf(yaw * DEG_TO_RAD);
-        float sinYaw = sinf(yaw * DEG_TO_RAD);
+        float cosPitch = cosf(rotation.x);
+        float sinPitch = sinf(rotation.x);
+        float cosYaw = cosf(rotation.y);
+        float sinYaw = sinf(rotation.y);
 
-        // 计算前向量
+        // Forward vector
         forward = Vec3(cosYaw * cosPitch, sinPitch, sinYaw * cosPitch).normalize();
 
-        // 计算右向量
+        // Right vector
         right = forward.cross(upWorld).normalize();
 
-        // 计算本地上向量
+        // Up local vector
         upLocal = right.cross(forward).normalize();
     }
-};
 
+    // Get view matrix
+    Matrix getViewMatrix() {
+        updateVectors();
+        Vec3 target = position + forward;
+        return lookAt(position, target, upLocal);
+    }
+
+    // Get projection matrix
+    Matrix getProjectionMatrix(float aspectRatio) {
+        return PerPro(aspectRatio, 1.0f, fov, farPlane, nearPlane);
+    }
+};
