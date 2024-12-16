@@ -1,0 +1,34 @@
+// 输入资源
+Texture2D normalMap : register(t1);           // 法线贴图
+SamplerState samplerLinear : register(s0);    // 采样器
+
+// 输入结构体
+struct PS_INPUT
+{
+    float4 Pos : SV_POSITION;
+    float2 TexCoords : TEXCOORD;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : TEXCOORD1;
+    float3 Normal : NORMAL;
+    float3 FragPos : TEXCOORD2; // 世界空间中的位置
+};
+
+// 像素着色器
+float4 PS(PS_INPUT input) : SV_Target
+{
+    // 从法线贴图采样法线值，并转换为 [-1, 1] 范围
+    float3 sampledNormal = normalMap.Sample(samplerLinear, input.TexCoords).xyz * 2.0f - 1.0f;
+
+    // 创建 TBN 矩阵（Tangent、Bitangent、Normal）
+    float3x3 TBN = float3x3(normalize(input.Tangent), normalize(input.Bitangent), normalize(input.Normal));
+    
+    // 将法线从 Tangent Space 转换到 World Space
+    float3 worldNormal = normalize(mul(sampledNormal, TBN));
+
+    // 模拟简单光照计算
+    float3 lightDir = normalize(float3(1.0f, -1.0f, -1.0f)); // 方向光方向
+    float lightIntensity = max(dot(worldNormal, lightDir), 0.0f);
+
+    // 输出最终颜色
+    return float4(lightIntensity * 0.9f, lightIntensity * 0.7f, lightIntensity * 0.5f, 1.0f);
+}

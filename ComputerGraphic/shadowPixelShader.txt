@@ -1,0 +1,44 @@
+
+Texture2D shadowMap : register(t1);             
+SamplerComparisonState shadowSampler : register(s1); 
+
+
+struct PS_INPUT
+{
+    float4 Pos : SV_POSITION;                   
+    float3 Normal : NORMAL;                    
+    float2 TexCoords : TEXCOORD;                
+    float4 ShadowPos : TEXCOORD1;             
+};
+
+// Calculates shadow factor based on depth comparison
+float calculateShadowFactor(float4 shadowCoord)
+{
+    shadowCoord.xyz /= shadowCoord.w; // Perspective divide to NDC [0, 1]
+
+
+    if (shadowCoord.x < 0.0f || shadowCoord.x > 1.0f ||
+        shadowCoord.y < 0.0f || shadowCoord.y > 1.0f ||
+        shadowCoord.z < 0.0f || shadowCoord.z > 1.0f)
+    {
+        return 1.0f;
+    }
+
+
+    return shadowMap.SampleCmpLevelZero(shadowSampler, shadowCoord.xy, shadowCoord.z);
+}
+
+
+float4 PS(PS_INPUT input) : SV_Target0
+{
+ 
+    float shadowFactor = calculateShadowFactor(input.ShadowPos);
+
+
+    float3 baseColor = abs(input.Normal) * 0.9f;
+
+  
+    float3 finalColor = baseColor * shadowFactor;
+
+    return float4(finalColor, 1.0f);
+}

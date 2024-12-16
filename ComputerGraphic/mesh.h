@@ -328,9 +328,7 @@ public:
 				indices.push_back(next + 1);
 			}
 		}
-		//	text.load(&core, "SkyDome.png");
 
-		textures->load(&core, "SkyDome.png");
 		Mesh.init(vertices, indices, core);
 	}
 

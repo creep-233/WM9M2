@@ -14,7 +14,7 @@ float4 PS_Shadow(PS_INPUT input) : SV_TARGET
 
     float2 shadowUV = lightClipCoords.xy * 0.5f + float2(0.5f, 0.5f);
 
-    // Check if the coordinates are within the shadow map bounds
+
     if (shadowUV.x < 0.0f || shadowUV.x > 1.0f ||
         shadowUV.y < 0.0f || shadowUV.y > 1.0f) 
     {
@@ -22,9 +22,9 @@ float4 PS_Shadow(PS_INPUT input) : SV_TARGET
         return float4(1.0, 1.0, 1.0, 1.0);
     }
 
-    // Sample the depth
+
     float shadowDepth = tex.Sample(samplerLinear, shadowUV).r;
-    // Compare current depth with shadow depth
+
     float currentDepth = lightClipCoords.z;
     float bias = 0.005f; // can reduce acne
     float shadowFactor = (currentDepth > shadowDepth + bias) ? 0.0f : 1.0f;

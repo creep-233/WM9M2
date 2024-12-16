@@ -89,7 +89,7 @@ class shader {
 
 public:
 
-    //sampler Sampler;
+    sampler Sampler;
 
     ID3D11VertexShader* vertexShader;
     ID3D11PixelShader* pixelShader;

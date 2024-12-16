@@ -6,20 +6,20 @@
 
 class Camera {
 public:
-    Vec3 position;      // Camera position
-    Vec3 rotation;      // Camera rotation (pitch, yaw, roll)
+    Vec3 position;     
+    Vec3 rotation;     
 
-    Vec3 upWorld;       // World up vector
-    Vec3 forward;       // Forward vector
-    Vec3 right;         // Right vector
-    Vec3 upLocal;       // Local up vector
+    Vec3 upWorld;       
+    Vec3 forward;       
+    Vec3 right;         
+    Vec3 upLocal;      
 
-    Matrix viewMatrix;  // View matrix
-    Matrix projectionMatrix; // Projection matrix
+    Matrix viewMatrix;  
+    Matrix projectionMatrix; 
 
     float fov;          // Field of view
-    float nearPlane;    // Near clipping plane
-    float farPlane;     // Far clipping plane
+    float nearPlane;    
+    float farPlane;    
 
     POINT currentMousePos;
     POINT lastMousePos;
@@ -82,17 +82,17 @@ public:
             resetCamera();
         }
 
-        // 修正 forward 和 right，使其 Y 分量为零，保持水平移动
+   
         Vec3 horizontalForward = Vec3(forward.x, 1.0f, forward.z).normalize();
         Vec3 horizontalRight = Vec3(right.x, 1.0f, right.z).normalize();
     
-        // 使用修正后的向量更新位置
+    
         if (moveForward) position += horizontalForward * speed * dt;
         if (moveBackward) position -= horizontalForward * speed * dt;
         if (moveLeft) position -= horizontalRight * speed * dt;
         if (moveRight) position += horizontalRight * speed * dt;
 
-        // 确保相机始终停留在地面上（可选，如果需要强制 Y 不变）
+    
         position.y = 1.0f;
     }
 
@@ -108,32 +108,10 @@ public:
         updateVectors();
     }
 
-    // Capture mouse input for rotation
-    //void captureInput(HWND hwnd, float mouseSensitivity = 0.1f) {
-    //    GetCursorPos(&currentMousePos);
-    //    ScreenToClient(hwnd, &currentMousePos);
-
-    //    float deltaX = 0.0f;
-    //    float deltaY = 0.0f;
-
-    //    if (!firstMouseCapture) {
-    //        deltaX = static_cast<float>(currentMousePos.x - lastMousePos.x);
-    //        deltaY = static_cast<float>(currentMousePos.y - lastMousePos.y);
-    //    }
-    //    else {
-    //        firstMouseCapture = false;
-    //    }
-
-    //    lastMousePos = currentMousePos;
-
-    //    if (deltaX != 0.0f || deltaY != 0.0f) {
-    //        processMouse(deltaX, deltaY, mouseSensitivity);
-    //    }
-    //}
 
     void captureInput(HWND hwnd, float mouseSensitivity = 0.1f) {
-        // 获取当前鼠标位置
-        POINT windowCenter = { 512, 512 }; // 这里假设窗口大小是1024x1024
+
+        POINT windowCenter = { 512, 512 }; 
         POINT currentMouse;
         GetCursorPos(&currentMouse);
         ScreenToClient(hwnd, &currentMouse);
@@ -141,14 +119,14 @@ public:
         float deltaX = static_cast<float>(currentMouse.x - windowCenter.x);
         float deltaY = static_cast<float>(currentMouse.y - windowCenter.y);
 
-        // 处理鼠标位移
+    
         if (!firstMouseCapture) {
             processMouse(deltaX, deltaY, mouseSensitivity);
         }
         firstMouseCapture = false;
 
-        // 重置鼠标位置到窗口中心
-        ClientToScreen(hwnd, &windowCenter); // 转换到屏幕坐标
+      
+        ClientToScreen(hwnd, &windowCenter);
         SetCursorPos(windowCenter.x, windowCenter.y);
     }
 

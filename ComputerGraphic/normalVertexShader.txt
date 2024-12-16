@@ -1,0 +1,36 @@
+struct VS_INPUT
+{
+    float3 Pos : POSITION;     // 顶点位置
+    float3 Normal : NORMAL;    // 法线
+    float2 TexCoords : TEXCOORD; // 纹理坐标
+    float3 Tangent : TANGENT;  // 切线
+};
+
+struct PS_INPUT
+{
+    float4 Pos : SV_POSITION;
+    float2 TexCoords : TEXCOORD;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : TEXCOORD1;
+    float3 Normal : NORMAL;
+    float3 FragPos : TEXCOORD2; // 世界空间中的位置
+};
+
+// 顶点着色器
+PS_INPUT VS(VS_INPUT input)
+{
+    PS_INPUT output;
+
+    // 计算世界空间下的位置和法线
+    output.Pos = mul(worldViewProj, float4(input.Pos, 1.0));
+    output.FragPos = mul(world, float4(input.Pos, 1.0)).xyz;
+    output.Normal = normalize(mul((float3x3)world, input.Normal));
+    output.Tangent = normalize(mul((float3x3)world, input.Tangent));
+    
+    // 计算 Bitangent
+    output.Bitangent = normalize(cross(output.Normal, output.Tangent));
+    
+    output.TexCoords = input.TexCoords;
+
+    return output;
+}

@@ -60,7 +60,7 @@ void RandomCreation(std::vector<Matrix>& matrices, unsigned int count) {
 
 void SaveTrees(std::vector<Matrix>& matrices) {
 	// use fstream to save random tree position into binary file
-	std::ofstream file("world.dat", std::ios::binary);
+	std::ofstream file("Tree.dat", std::ios::binary);
 	if (!file.is_open()) return;
 
 	size_t count = matrices.size();
@@ -123,7 +123,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 	//skybox
 	skyBoxShader.initializeStaticShader("3D_vertex_shader.txt", "G_buffer_pixel_shader.txt", &dx);
-	skybox.init(dx, 30, 30, 80.0f, "Resources/Textures/Noon_07_3K.png");
+	skybox.init(dx, 35, 35, 90.0f, "Resources/Textures/Noon_07_3K.png");
 
 
 	//pine
@@ -251,8 +251,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 		elapsedTime += dt;
 		// camera control
 		float speed = 6.f;
-		//fps.update(dt);
-		//fps.draw();
+		fps.update(dt);
+		fps.draw();
 
 		//camera
 		camera.captureInput(win.hwnd, mouseSensitivity);
@@ -274,23 +274,22 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 
 
-		// 更新摄像机包围盒位置
+
 		cameraBoundingBox.clear();
 		cameraBoundingBox.points = { Vec3(-2.0f, -2.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f) };
 		cameraBoundingBox.applyTransform(Vec3(1.0f, 1.0f, 1.0f), Vec3(0, 0, 0), camera.position);
 
-		// 更新恐龙包围盒位置
+
 		dinoBoundingBox.clear();
 		dinoBoundingBox.points = { Vec3(-0.5f, 0.0f, -0.5f), Vec3(0.5f, 2.0f, 0.5f) };
 		dinoBoundingBox.applyTransform(Vec3(0.9f, 0.9f, 0.9f), Vec3(0, 0, 0), Vec3(-10, 0, 0));
 
-		// 碰撞检测：摄像机与恐龙包围盒
 		if (cameraBoundingBox.isOverlapping(dinoBoundingBox)) {
 			DebugLog("Collision detected! Changing animation to 'Run'.");
-			animManager.update("dino", "Run", dt); // 碰撞时播放 Run 动画
+			animManager.update("dino", "Run", dt); 
 		}
 		else {
-			animManager.update("dino", "Idle", dt); // 非碰撞时播放 Idle 动画
+			animManager.update("dino", "Idle", dt); 
 		}
 
 
@@ -307,9 +306,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nC
 
 
 		// skybox
-		Matrix skyDomeWorldMatrix = Matrix::worldTrans(Vec3(1, 1, 1), Vec3(0, 0, 0), camera.position);
+		Matrix skyboxWorldMatrix = Matrix::worldTrans(Vec3(1, 1, 1), Vec3(0, 0, 0), camera.position);
 		skyBoxShader.apply(&dx);
-		skyBoxShader.updateConstantVS("SkyDome", "staticMeshBuffer", "W", &skyDomeWorldMatrix);
+		skyBoxShader.updateConstantVS("SkyDome", "staticMeshBuffer", "W", &skyboxWorldMatrix);
 		skyBoxShader.updateConstantVS("StaticModel", "staticMeshBuffer", "VP", &vpMatrix);
 		dx.devicecontext->PSSetShaderResources(0, 1, &skybox.text.srv);
 		skybox.draw(dx.devicecontext);

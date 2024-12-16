@@ -21,6 +21,10 @@ public:
 	D3D11_VIEWPORT viewport;
 	ID3D11RasterizerState* rasterizerState;
 
+	ID3D11Texture2D* shadowMap;              
+	ID3D11DepthStencilView* shadowDepthView; 
+	ID3D11ShaderResourceView* shadowSRV;     
+
 
 	void init(int width, int height, HWND hwnd, bool window_fullscreen){
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -106,6 +110,37 @@ public:
 	rsdesc.CullMode = D3D11_CULL_NONE;
 	device->CreateRasterizerState(&rsdesc, &rasterizerState);
 	devicecontext->RSSetState(rasterizerState);
+
+
+
+	// Shadow Map
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = 1024; 
+	shadowDesc.Height = 1024;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS; 
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+	//  Shadow Map texture
+	device->CreateTexture2D(&shadowDesc, nullptr, &shadowMap);
+
+	// depth
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDescShadow = {};
+	dsvDescShadow.Format = DXGI_FORMAT_D32_FLOAT;
+	dsvDescShadow.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	device->CreateDepthStencilView(shadowMap, &dsvDescShadow, &shadowDepthView);
+
+	// Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDescShadow = {};
+	srvDescShadow.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDescShadow.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDescShadow.Texture2D.MipLevels = 1;
+	device->CreateShaderResourceView(shadowMap, &srvDescShadow, &shadowSRV);
+
+
+
 	}
 
 

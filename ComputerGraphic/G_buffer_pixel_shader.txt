@@ -10,10 +10,6 @@ struct PS_INPUT {
 
 struct GBUFFER {
     float4 colour : SV_TARGET0;    //colour
-  //  float4 normal : SV_TARGET1;    //normal mapping
- //   float4 depth : SV_TARGET2;    //shadow
-    // Maybe need more channels (like normal for normal mapping, depth for shadow check?)
-    ////////////////////////////////////////////TODOTODOTODO////////////////////////////////////
 
 };
 
@@ -21,15 +17,8 @@ GBUFFER PS(PS_INPUT input) {
     GBUFFER gbuffer;
 
     float4 colour = tex.Sample(samplerLinear, input.TexCoords);
-    // Not draw them directly, but send them to G-buffer
-    // colour
+
     gbuffer.colour = colour;
-
-    // for normal mapping, looks like need more channels?
-   // gbuffer.normal = normalize(input.Normal);
-
-    // depth
-   // gbuffer.depth = input.Pos.z;
 
     return gbuffer;
 }

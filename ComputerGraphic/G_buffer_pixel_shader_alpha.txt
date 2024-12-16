@@ -10,8 +10,7 @@ struct PS_INPUT {
 
 struct GBUFFER {
     float4 colour : SV_TARGET0;    //colour
-   // float4 normal : SV_TARGET1;    //normal mapping
-   // float4 depth : SV_TARGET2;    //shadow
+
 
 };
 GBUFFER PS(PS_INPUT input) {
