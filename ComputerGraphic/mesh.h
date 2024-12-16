@@ -76,25 +76,6 @@ public:
 
 	}
 
-	//void load() {
-
-	//	std::vector<std::string> textureFilenames;
-
-	//	for (int i = 0; i < gemmeshes.size(); i++) {
-	//		Mesh mesh;
-	//		std::vector<STATIC_VERTEX> vertices;
-	//		for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
-	//			STATIC_VERTEX v;
-	//			memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
-	//			vertices.push_back(v);
-	//		}
-	//		textureFilenames.push_back(gemmeshes[i].material.find("diffuse").getValue());
-	//		// Load texture with filename: gemmeshes[i].material.find("diffuse").getValue()
-	//		mesh.init(core, vertices, gemmeshes[i].indices);
-	//		meshes.push_back(mesh);
-	//	}
-	//}
-
 
 };
 
@@ -503,23 +484,6 @@ public:
 		std::cout << "Textures" << textures << std::endl;
 	}
 
-
-	void loadWithoutTexture(std::string filename, DXCore& core) {
-		GEMLoader::GEMModelLoader loader;
-		std::vector<GEMLoader::GEMMesh> gemmeshes;
-		loader.load(filename, gemmeshes);
-		for (int i = 0; i < gemmeshes.size(); i++) {
-			mesh Mesh;
-			std::vector<STATIC_VERTEX> vertices;
-			for (int j = 0; j < gemmeshes[i].verticesStatic.size(); j++) {
-				STATIC_VERTEX v;
-				memcpy(&v, &gemmeshes[i].verticesStatic[j], sizeof(STATIC_VERTEX));
-				vertices.push_back(v);
-			}
-			Mesh.init(vertices, gemmeshes[i].indices, core);
-			meshes.push_back(Mesh);
-		}
-	}
 	void updateWorld(Matrix w, shader shad, DXCore core) {
 		// submit world matrix to vertex shader
 		shad.updateConstantVS("StaticModel", "staticMeshBuffer", "W", &w); // adjust buffer
