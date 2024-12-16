@@ -1,0 +1,33 @@
+Texture2D tex : register(t0);          
+SamplerState samplerLinear : register(s0); 
+
+struct PS_INPUT {
+    float4 Pos : SV_POSITION;   
+    float3 Normal : NORMAL;     
+    float3 Tangent : TANGENT;   
+    float2 TexCoords : TEXCOORD; 
+};
+
+struct GBUFFER {
+    float4 colour : SV_TARGET0;    //colour
+   // float4 normal : SV_TARGET1;    //normal mapping
+   // float4 depth : SV_TARGET2;    //shadow
+
+};
+GBUFFER PS(PS_INPUT input) {
+    GBUFFER gbuffer;
+
+    float4 colour = tex.Sample(samplerLinear, input.TexCoords);
+
+    if (colour.a < 0.5) {
+        discard;
+    }
+
+    // Write to the G-buffer
+    gbuffer.colour = float4(colour.rgb, 1.0); 
+
+  //  gbuffer.normal = normalize(input.Normal);
+   // gbuffer.depth = input.Pos.z;             
+
+    return gbuffer;
+}

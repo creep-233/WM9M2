@@ -194,7 +194,7 @@ public:
         maxHealth(initialHealth), moveSpeed(speed), isAlive(true), damageCooldown(0.0f) {}
 
     void init(DXCore& core, TextureManager& textureManager) {
-        enemyAnimation.initTexture("Resources/model/TRex.gem", core, &textureManager);
+        enemyAnimation.initTexture("Resources/TRex.gem", core, &textureManager);
     }
 
     void takeDamage(float damageAmount) {

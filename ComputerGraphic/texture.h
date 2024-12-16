@@ -5,6 +5,8 @@
 #include "DXCore.h"
 #include "shader.h"
 
+
+
 class Texture {
 public:
 
@@ -43,12 +45,41 @@ public:
     }
 
 
-	void load(DXCore* core, std::string& filename) {
+	//void load(DXCore* core, std::string& filename) {
 
+ //       int width = 0;
+ //       int height = 0;
+ //       int channels = 0;
+ //       unsigned char* texels = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+ //       if (channels == 3) {
+ //           channels = 4;
+ //           unsigned char* texelsWithAlpha = new unsigned char[width * height * channels];
+ //           for (int i = 0; i < (width * height); i++) {
+ //               texelsWithAlpha[i * 4] = texels[i * 3];
+ //               texelsWithAlpha[(i * 4) + 1] = texels[(i * 3) + 1];
+ //               texelsWithAlpha[(i * 4) + 2] = texels[(i * 3) + 2];
+ //               texelsWithAlpha[(i * 4) + 3] = 255;
+ //           }
+ //           // Initialize texture using width, height, channels, and texelsWithAlpha
+ //           delete[] texelsWithAlpha;
+ //       }
+ //       else {
+ //           // Initialize texture using width, height, channels, and texels
+ //       }
+ //       stbi_image_free(texels);
+
+	//}
+
+    void load(DXCore* core, std::string& filename) {
         int width = 0;
         int height = 0;
         int channels = 0;
         unsigned char* texels = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+        if (!texels) {
+            std::cerr << "Failed to load texture: " << filename << std::endl;
+            return;
+        }
+
         if (channels == 3) {
             channels = 4;
             unsigned char* texelsWithAlpha = new unsigned char[width * height * channels];
@@ -58,15 +89,15 @@ public:
                 texelsWithAlpha[(i * 4) + 2] = texels[(i * 3) + 2];
                 texelsWithAlpha[(i * 4) + 3] = 255;
             }
-            // Initialize texture using width, height, channels, and texelsWithAlpha
+            init(width, height, channels, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, texelsWithAlpha, core);
             delete[] texelsWithAlpha;
         }
         else {
-            // Initialize texture using width, height, channels, and texels
+            init(width, height, channels, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, texels, core);
         }
         stbi_image_free(texels);
+    }
 
-	}
 
     void free() {
         srv->Release();

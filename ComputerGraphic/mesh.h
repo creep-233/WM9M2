@@ -4,7 +4,7 @@
 #include"shader.h"
 #include"GEMLoader.h"
 #include"Camera.h"
-#include"texture.h"
+#include"Texture.h"
 
 struct STATIC_VERTEX
 {
@@ -106,6 +106,7 @@ public:
 	ID3D11DeviceContext* devicecontext;
 	shader* shaders;
 	Camera* camera;  
+	Texture Textures;
 
 	float t = 0.0f;
 
@@ -144,8 +145,23 @@ public:
 	void draw() {
 		if (shaders) {
 			shaders->updateConstantVS("StaticModel", "staticMeshBuffer", "W", &planeWorld);
+			//devicecontext->PSSetShaderResources(0, 1, &Textures.srv);
 			Mesh.draw(devicecontext);
 		}
+	}
+
+
+	void initTexture(DXCore& core, std::string filename) {
+		std::vector<STATIC_VERTEX> vertices;
+		vertices.push_back(addVertex(Vec3(-1.5, 0, -1.5), Vec3(0, 1, 0), 0, 0));
+		vertices.push_back(addVertex(Vec3(1.5, 0, -1.5), Vec3(0, 1, 0), 1, 0));
+		vertices.push_back(addVertex(Vec3(-1.5, 0, 1.5), Vec3(0, 1, 0), 0, 1));
+		vertices.push_back(addVertex(Vec3(1.5, 0, 1.5), Vec3(0, 1, 0), 1, 1));
+		std::vector<unsigned int> indices;
+		indices.push_back(2); indices.push_back(1); indices.push_back(0);
+		indices.push_back(1); indices.push_back(2); indices.push_back(3);
+		Textures.load(&core, filename);
+		Mesh.init(vertices, indices, core);
 	}
 
 	void init(ID3D11DeviceContext* _devicecontext, shader* _shaders, DXCore& core, Camera* _camera) {
@@ -162,6 +178,10 @@ public:
 
 		Mesh.init(vertices, indices, core);
 	}
+
+
+
+
 };
 
 

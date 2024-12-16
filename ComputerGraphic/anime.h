@@ -1,10 +1,11 @@
 #pragma once
-#include"Mathematic.h"
-#include<vector>
-#include"GEMLoader.h"
-#include<string>
-#include"DXCore.h"
-#include"mesh.h"
+#include "Mathematic.h"
+#include <vector>
+#include <map>
+#include <string>
+#include "mesh.h"
+#include "GEMLoader.h"
+#include "DXCore.h"
 
 struct Bone
 {
@@ -285,5 +286,27 @@ public:
 			matrices[i] = animation.interpolateBoneToGlobal(name, matrices, frame, interpolationFact, i);
 		}
 		animation.calcFinalTransforms(matrices);
+	}
+};
+
+class AnimationManager {
+private:
+	std::map<std::string, AnimationInstance*> animationInstances;
+
+public:
+	void addAnimationInstance(const std::string& name, AnimationInstance* instance) {
+		animationInstances[name] = instance;
+	}
+
+	void update(const std::string& name, const std::string& animationName, float dt) {
+		if (animationInstances.find(name) != animationInstances.end()) {
+			animationInstances[name]->update(animationName, dt);
+		}
+	}
+
+	void stopAnimation(const std::string& name) {
+		if (animationInstances.find(name) != animationInstances.end()) {
+			animationInstances[name]->resetAnimationTime();
+		}
 	}
 };

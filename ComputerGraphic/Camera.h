@@ -61,21 +61,42 @@ public:
         updateVectors();
     }
 
-    // Process keyboard input for movement
+    // //Process keyboard input for movement
+    //void processInput(bool moveForward, bool moveBackward, bool moveLeft, bool moveRight, bool reset, float speed, float dt) {
+    //    if (reset) {
+    //        resetCamera();
+    //    }
+
+    //    Vec3 horizontalForward = Vec3(forward.x, 0.0f, forward.z).normalize();
+    //    Vec3 horizontalRight = Vec3(right.x, 0.0f, right.z).normalize();
+
+
+    //    if (moveForward) position += forward * speed * dt;
+    //    if (moveBackward) position -= forward * speed * dt;
+    //    if (moveLeft) position -= right * speed * dt;
+    //    if (moveRight) position += right * speed * dt;
+    //}
+
     void processInput(bool moveForward, bool moveBackward, bool moveLeft, bool moveRight, bool reset, float speed, float dt) {
         if (reset) {
             resetCamera();
         }
 
-        Vec3 horizontalForward = Vec3(forward.x, 0.0f, forward.z).normalize();
-        Vec3 horizontalRight = Vec3(right.x, 0.0f, right.z).normalize();
+        // 修正 forward 和 right，使其 Y 分量为零，保持水平移动
+        Vec3 horizontalForward = Vec3(forward.x, 1.0f, forward.z).normalize();
+        Vec3 horizontalRight = Vec3(right.x, 1.0f, right.z).normalize();
+    
+        // 使用修正后的向量更新位置
+        if (moveForward) position += horizontalForward * speed * dt;
+        if (moveBackward) position -= horizontalForward * speed * dt;
+        if (moveLeft) position -= horizontalRight * speed * dt;
+        if (moveRight) position += horizontalRight * speed * dt;
 
-
-        if (moveForward) position += forward * speed * dt;
-        if (moveBackward) position -= forward * speed * dt;
-        if (moveLeft) position -= right * speed * dt;
-        if (moveRight) position += right * speed * dt;
+        // 确保相机始终停留在地面上（可选，如果需要强制 Y 不变）
+        position.y = 1.0f;
     }
+
+
 
     // Process mouse input to adjust rotation
     void processMouse(float deltaX, float deltaY, float mouseSensitivity) {
@@ -88,27 +109,49 @@ public:
     }
 
     // Capture mouse input for rotation
+    //void captureInput(HWND hwnd, float mouseSensitivity = 0.1f) {
+    //    GetCursorPos(&currentMousePos);
+    //    ScreenToClient(hwnd, &currentMousePos);
+
+    //    float deltaX = 0.0f;
+    //    float deltaY = 0.0f;
+
+    //    if (!firstMouseCapture) {
+    //        deltaX = static_cast<float>(currentMousePos.x - lastMousePos.x);
+    //        deltaY = static_cast<float>(currentMousePos.y - lastMousePos.y);
+    //    }
+    //    else {
+    //        firstMouseCapture = false;
+    //    }
+
+    //    lastMousePos = currentMousePos;
+
+    //    if (deltaX != 0.0f || deltaY != 0.0f) {
+    //        processMouse(deltaX, deltaY, mouseSensitivity);
+    //    }
+    //}
+
     void captureInput(HWND hwnd, float mouseSensitivity = 0.1f) {
-        GetCursorPos(&currentMousePos);
-        ScreenToClient(hwnd, &currentMousePos);
+        // 获取当前鼠标位置
+        POINT windowCenter = { 512, 512 }; // 这里假设窗口大小是1024x1024
+        POINT currentMouse;
+        GetCursorPos(&currentMouse);
+        ScreenToClient(hwnd, &currentMouse);
 
-        float deltaX = 0.0f;
-        float deltaY = 0.0f;
+        float deltaX = static_cast<float>(currentMouse.x - windowCenter.x);
+        float deltaY = static_cast<float>(currentMouse.y - windowCenter.y);
 
+        // 处理鼠标位移
         if (!firstMouseCapture) {
-            deltaX = static_cast<float>(currentMousePos.x - lastMousePos.x);
-            deltaY = static_cast<float>(currentMousePos.y - lastMousePos.y);
-        }
-        else {
-            firstMouseCapture = false;
-        }
-
-        lastMousePos = currentMousePos;
-
-        if (deltaX != 0.0f || deltaY != 0.0f) {
             processMouse(deltaX, deltaY, mouseSensitivity);
         }
+        firstMouseCapture = false;
+
+        // 重置鼠标位置到窗口中心
+        ClientToScreen(hwnd, &windowCenter); // 转换到屏幕坐标
+        SetCursorPos(windowCenter.x, windowCenter.y);
     }
+
 
     // Update direction vectors based on rotation
     void updateVectors() {
